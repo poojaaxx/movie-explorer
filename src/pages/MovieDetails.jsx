@@ -4,6 +4,7 @@ import { ArrowLeft, Play, Star } from 'lucide-react';
 import useRequest from '../hooks/useRequest.js';
 import MovieImage from '../components/MovieImage.jsx';
 import MovieGrid from '../components/MovieGrid.jsx';
+import FavouriteButton from '../components/FavouriteButton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import NotFound from './NotFound.jsx';
 import { formatRating, formatRuntime, formatYear } from '../utils/movies.js';
@@ -128,6 +129,7 @@ function MovieDetailsContent({ id }) {
               </p>
 
               <div className="flex flex-wrap gap-3">
+                <FavouriteButton movie={movie} />
                 {trailer && (
                   <a href="#trailer" className="button button-primary">
                     <Play size={16} fill="currentColor" aria-hidden="true" />

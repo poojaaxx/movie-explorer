@@ -2,11 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import MovieCard from './MovieCard.jsx';
+import FavouritesProvider from '../context/FavouritesProvider.jsx';
 
 const movie = { id: 42, title: 'A good story', release_date: '2025-04-18', vote_average: 8.34, poster_path: '/poster.jpg' };
 
 function renderCard(overrides = {}) {
-  return render(<MemoryRouter><MovieCard movie={{ ...movie, ...overrides }} /></MemoryRouter>);
+  return render(<FavouritesProvider><MemoryRouter><MovieCard movie={{ ...movie, ...overrides }} /></MemoryRouter></FavouritesProvider>);
 }
 
 describe('MovieCard', () => {

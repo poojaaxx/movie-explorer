@@ -41,4 +41,17 @@ describe('application routing', () => {
     expect(screen.getByRole('link', { name: /back to discovery/i })).toHaveAttribute('href', '/');
     expect(document.title).toBe('Page not found — Movie Explorer');
   });
+
+  it('keeps favourite indicators and the favourites route in sync', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const buttons = await screen.findAllByRole('button', { name: 'Add A good story to favourites' });
+    await user.click(buttons[0]);
+    expect(screen.getAllByRole('button', { name: 'Remove A good story from favourites' })).toHaveLength(2);
+    await user.click(within(screen.getByRole('navigation', { name: 'Main navigation' })).getByRole('link', { name: 'Favourites' }));
+    expect(screen.getByRole('link', { name: 'View A good story' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Remove A good story from favourites' }));
+    expect(screen.queryByRole('link', { name: 'View A good story' })).not.toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem('movie-explorer:favourites:v1'))).toEqual([]);
+  });
 });

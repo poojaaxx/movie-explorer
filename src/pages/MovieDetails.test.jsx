@@ -3,6 +3,7 @@ import { Link, MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MovieDetails from './MovieDetails.jsx';
 import NotFound from './NotFound.jsx';
+import FavouritesProvider from '../context/FavouritesProvider.jsx';
 import { requestMovies } from '../services/tmdb.js';
 
 vi.mock('../services/tmdb.js', () => ({ requestMovies: vi.fn() }));
@@ -36,6 +37,7 @@ function renderDetails(entries = ['/movie/11']) {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </MemoryRouter>,
+    { wrapper: FavouritesProvider },
   );
 }
 

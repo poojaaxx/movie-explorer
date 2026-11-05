@@ -6,6 +6,7 @@ import MovieGrid from '../components/MovieGrid.jsx';
 import MovieSkeleton from '../components/MovieSkeleton.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import PopularMovies from '../components/PopularMovies.jsx';
 import { formatRating, formatYear } from '../utils/movies.js';
 
 function MovieSection({ title, subtitle, icon: Icon, request }) {
@@ -14,7 +15,6 @@ function MovieSection({ title, subtitle, icon: Icon, request }) {
 
 export default function Home() {
   const trending = useRequest('trending');
-  const popular = useRequest('popular');
   const featured = trending.data?.results?.find((movie) => movie.backdrop_path && movie.overview);
   return (
     <>
@@ -30,7 +30,7 @@ export default function Home() {
       <main id="main-content" className="container home-content">
         <div className="discovery-intro"><div><span className="eyebrow">THE WORLD OF CINEMA, ONE FILM AT A TIME</span><h2>Find your next favourite<span>.</span></h2></div><Link to="/search" className="text-link">Explore all movies<ArrowRight size={16} aria-hidden="true" /></Link></div>
         <div id="trending"><MovieSection title="Trending this week" subtitle="The movies making their way onto everyone’s watchlist." icon={TrendingUp} request={trending} /></div>
-        <MovieSection title="Popular right now" subtitle="A good place to start when you can’t decide." request={popular} />
+        <PopularMovies />
         <section className="discovery-banner"><div><span className="eyebrow">SOMETHING IN MIND?</span><h2>Every great movie night starts with a search.</h2><p>Find an old favourite, a new release, or that film you keep meaning to watch.</p></div><Link to="/search" className="button button-secondary">Find your movie<ArrowRight size={16} aria-hidden="true" /></Link></section>
       </main>
     </>
