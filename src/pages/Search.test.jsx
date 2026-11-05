@@ -6,12 +6,23 @@ import { requestMovies } from '../services/tmdb.js';
 
 vi.mock('../services/tmdb.js', () => ({ requestMovies: vi.fn() }));
 vi.mock('../components/MovieGrid.jsx', () => ({
-  default: ({ movies }) => <div>{movies.map((movie) => <p key={movie.id}>{movie.title}</p>)}</div>,
+  default: ({ movies }) => (
+    <div>
+      {movies.map((movie) => (
+        <p key={movie.id}>{movie.title}</p>
+      ))}
+    </div>
+  ),
 }));
 
 function Location() {
   const location = useLocation();
-  return <output data-testid="location">{location.pathname}{location.search}</output>;
+  return (
+    <output data-testid="location">
+      {location.pathname}
+      {location.search}
+    </output>
+  );
 }
 
 function renderSearch(path = '/search') {
@@ -57,7 +68,11 @@ describe('movie search', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/search?q=Alien');
     await advance(1);
     expect(requestMovies).toHaveBeenCalledTimes(1);
-    expect(requestMovies).toHaveBeenCalledWith('search', { query: 'Alien', page: 1 }, expect.any(Object));
+    expect(requestMovies).toHaveBeenCalledWith(
+      'search',
+      { query: 'Alien', page: 1 },
+      expect.any(Object),
+    );
     expect(screen.getByText('Alien')).toBeInTheDocument();
   });
 
@@ -65,7 +80,11 @@ describe('movie search', () => {
     renderSearch('/search?q=Alien&page=2');
     await advance();
     expect(screen.getByLabelText('Movie title')).toHaveValue('Alien');
-    expect(requestMovies).toHaveBeenCalledWith('search', { query: 'Alien', page: 2 }, expect.any(Object));
+    expect(requestMovies).toHaveBeenCalledWith(
+      'search',
+      { query: 'Alien', page: 2 },
+      expect.any(Object),
+    );
   });
 
   it('hides previous results immediately and resets pagination for a new title', async () => {
@@ -77,12 +96,20 @@ describe('movie search', () => {
     expect(screen.getByLabelText('Loading movies')).toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent('/search?q=Arrival');
     await advance(450);
-    expect(requestMovies).toHaveBeenLastCalledWith('search', { query: 'Arrival', page: 1 }, expect.any(Object));
+    expect(requestMovies).toHaveBeenLastCalledWith(
+      'search',
+      { query: 'Arrival', page: 1 },
+      expect.any(Object),
+    );
   });
 
   it('ignores a late response from an older search', async () => {
     let resolveOld;
-    requestMovies.mockReturnValueOnce(new Promise((resolve) => { resolveOld = resolve; }));
+    requestMovies.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveOld = resolve;
+      }),
+    );
     requestMovies.mockResolvedValueOnce(resultPage('Arrival'));
     renderSearch('/search?q=Alien');
     const oldSignal = requestMovies.mock.calls[0][2].signal;
@@ -114,7 +141,9 @@ describe('movie search', () => {
   });
 
   it('loads the next page and updates the shareable URL', async () => {
-    requestMovies.mockImplementation((endpoint, { page }) => Promise.resolve(resultPage(`Page ${page} movie`, page, 3)));
+    requestMovies.mockImplementation((endpoint, { page }) =>
+      Promise.resolve(resultPage(`Page ${page} movie`, page, 3)),
+    );
     renderSearch('/search?q=Alien');
     await advance();
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
@@ -132,6 +161,38 @@ describe('movie search', () => {
     expect(screen.getByText('Page 500 of 500')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   });
+
+  it.each([
+    { totalPages: 3, totalResults: 60 },
+    { totalPages: 0, totalResults: 0 },
+  ])(
+    'lets a shared empty page return to page one while preserving the query: %j',
+    async ({ totalPages, totalResults }) => {
+      requestMovies
+        .mockResolvedValueOnce({
+          page: 500,
+          results: [],
+          total_pages: totalPages,
+          total_results: totalResults,
+        })
+        .mockResolvedValueOnce(resultPage('Alien', 1, 3));
+      renderSearch('/search?q=Alien&page=500');
+      await advance();
+      expect(screen.getByText('No movies on this page')).toBeInTheDocument();
+      expect(screen.getByText(`${totalResults} movies found`)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Back to first page' }));
+      await advance();
+      expect(screen.getByTestId('location')).toHaveTextContent('/search?q=Alien');
+      expect(screen.getByTestId('location')).not.toHaveTextContent('page=');
+      expect(requestMovies).toHaveBeenLastCalledWith(
+        'search',
+        { query: 'Alien', page: 1 },
+        expect.any(Object),
+      );
+      expect(screen.getByText('Alien')).toBeInTheDocument();
+    },
+  );
 
   it('clears results, removes the URL query and returns focus to the input', async () => {
     renderSearch('/search?q=Alien');

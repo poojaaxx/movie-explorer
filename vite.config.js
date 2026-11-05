@@ -24,12 +24,18 @@ function localMovieApi() {
       next();
     });
   }
-  return { name: 'local-movie-api', configureServer: installMiddleware, configurePreviewServer: installMiddleware };
+  return {
+    name: 'local-movie-api',
+    configureServer: installMiddleware,
+    configurePreviewServer: installMiddleware,
+  };
 }
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), localMovieApi()],
   test: {
+    pool: 'threads',
+    maxWorkers: 1,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
     clearMocks: true,

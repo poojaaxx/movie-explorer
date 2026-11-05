@@ -15,9 +15,10 @@ export default function Search() {
   const query = inputValue.trim();
   const debouncedQuery = useDebounce(query, 450);
   const requestedPage = Number(searchParams.get('page') || 1);
-  const page = Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 500
-    ? requestedPage
-    : 1;
+  const page =
+    Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 500
+      ? requestedPage
+      : 1;
   const waitingForInput = query !== debouncedQuery;
   const request = useRequest(query && !waitingForInput ? 'search' : null, {
     query: debouncedQuery,
@@ -121,7 +122,10 @@ export default function Search() {
           <>
             <MovieGrid movies={movies} />
             {totalPages > 1 && (
-              <nav aria-label="Search result pages" className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+              <nav
+                aria-label="Search result pages"
+                className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6"
+              >
                 <button
                   type="button"
                   className="button button-secondary"
@@ -131,7 +135,9 @@ export default function Search() {
                   <ArrowLeft size={16} aria-hidden="true" />
                   Previous
                 </button>
-                <span className="text-xs text-slate-400">Page {page} of {totalPages}</span>
+                <span className="text-xs text-slate-400">
+                  Page {page} of {totalPages}
+                </span>
                 <button
                   type="button"
                   className="button button-secondary"
@@ -145,8 +151,24 @@ export default function Search() {
             )}
           </>
         ) : (
-          <EmptyState title="No movies found" icon={SearchIcon}>
-            Try a different title or check the spelling. Sometimes a shorter search helps.
+          <EmptyState
+            title={page > 1 ? 'No movies on this page' : 'No movies found'}
+            icon={SearchIcon}
+            action={
+              page > 1 ? (
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => changePage(1)}
+                >
+                  Back to first page
+                </button>
+              ) : undefined
+            }
+          >
+            {page > 1
+              ? 'Search results can change. Return to the first page to see what is available.'
+              : 'Try a different title or check the spelling. Sometimes a shorter search helps.'}
           </EmptyState>
         )}
       </section>
