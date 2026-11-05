@@ -1,0 +1,12 @@
+.tools/
+node_modules/
+dist/
+docs/
+*.pdf
+.env*
+src/**/*.test.*
+src/test/
+api/*.test.js
+test-results/
+playwright-report/
+coverage/
