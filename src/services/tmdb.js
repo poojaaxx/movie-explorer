@@ -7,7 +7,9 @@ function movieError(message, code, status) {
 
 export async function requestMovies(endpoint, params = {}, { signal } = {}) {
   const query = new URLSearchParams({ endpoint });
-  for (const [name, value] of Object.entries(params).sort(([first], [second]) => first.localeCompare(second))) {
+  for (const [name, value] of Object.entries(params).sort(([first], [second]) =>
+    first.localeCompare(second),
+  )) {
     if (value === undefined || value === null) continue;
     if (!['string', 'number', 'boolean'].includes(typeof value) || name === 'endpoint') {
       throw movieError('The movie request is invalid.', 'INVALID_REQUEST');
@@ -31,7 +33,11 @@ export async function requestMovies(endpoint, params = {}, { signal } = {}) {
     payload = await response.json();
   } catch (error) {
     if (error.name === 'AbortError' || signal?.aborted) throw error;
-    throw movieError('Movie data could not be loaded. Please try again.', 'INVALID_RESPONSE', response.status);
+    throw movieError(
+      'Movie data could not be loaded. Please try again.',
+      'INVALID_RESPONSE',
+      response.status,
+    );
   }
 
   if (!response.ok || payload?.error) {
@@ -43,7 +49,11 @@ export async function requestMovies(endpoint, params = {}, { signal } = {}) {
   }
 
   if (!payload || typeof payload !== 'object') {
-    throw movieError('Movie data could not be loaded. Please try again.', 'INVALID_RESPONSE', response.status);
+    throw movieError(
+      'Movie data could not be loaded. Please try again.',
+      'INVALID_RESPONSE',
+      response.status,
+    );
   }
   return payload;
 }

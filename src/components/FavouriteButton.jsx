@@ -15,7 +15,11 @@ export default function FavouriteButton({ movie, compact = false }) {
       aria-pressed={selected}
       title={label}
     >
-      <Heart size={compact ? 18 : 16} fill={selected ? 'currentColor' : 'none'} aria-hidden="true" />
+      <Heart
+        size={compact ? 18 : 16}
+        fill={selected ? 'currentColor' : 'none'}
+        aria-hidden="true"
+      />
       {!compact && <span>{selected ? 'Saved to favourites' : 'Add to favourites'}</span>}
     </button>
   );

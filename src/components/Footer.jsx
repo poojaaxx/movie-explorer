@@ -5,7 +5,9 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="container footer-inner">
         <div>
-          <Link className="footer-brand" to="/">movieexplorer<span>.</span></Link>
+          <Link className="footer-brand" to="/">
+            movieexplorer<span>.</span>
+          </Link>
           <p>A little less scrolling. A little more cinema.</p>
         </div>
         <section className="tmdb-credit" aria-label="Credits">

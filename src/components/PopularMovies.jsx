@@ -8,15 +8,19 @@ import EmptyState from './EmptyState.jsx';
 export default function PopularMovies() {
   const { movies, loading, error, hasMore, totalResults, loadMore, retry } = useInfiniteMovies();
   const sentinel = useRef(null);
-  const loadedCount = totalResults > 0
-    ? `${movies.length} of ${totalResults.toLocaleString()} movies loaded`
-    : `${movies.length} movies loaded`;
+  const loadedCount =
+    totalResults > 0
+      ? `${movies.length} of ${totalResults.toLocaleString()} movies loaded`
+      : `${movies.length} movies loaded`;
 
   useEffect(() => {
     if (loading || error || !hasMore || !window.IntersectionObserver) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) loadMore();
-    }, { rootMargin: '400px' });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) loadMore();
+      },
+      { rootMargin: '400px' },
+    );
     if (sentinel.current) observer.observe(sentinel.current);
     return () => observer.disconnect();
   }, [loading, error, hasMore, loadMore]);

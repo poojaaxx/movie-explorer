@@ -14,7 +14,10 @@ function releaseDate(value) {
   const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return 'Not available';
   return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
   }).format(date);
 }
 
@@ -38,7 +41,11 @@ function MovieDetailsContent({ id }) {
     return (
       <main id="main-content" className="container page-main" aria-busy="true">
         {backButton}
-        <div role="status" aria-label="Loading movie details" className="grid gap-8 sm:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr]">
+        <div
+          role="status"
+          aria-label="Loading movie details"
+          className="grid gap-8 sm:grid-cols-[180px_1fr] lg:grid-cols-[240px_1fr]"
+        >
           <span className="sr-only">Loading movie details...</span>
           <div className="skeleton aspect-[2/3] w-40 sm:w-full" aria-hidden="true" />
           <div className="space-y-5 py-6" aria-hidden="true">
@@ -52,7 +59,12 @@ function MovieDetailsContent({ id }) {
   }
 
   if (request.error?.code === 'MOVIE_NOT_FOUND') {
-    return <NotFound title="Movie not found" description="We could not find that movie. Head back to discovery to find your next watch." />;
+    return (
+      <NotFound
+        title="Movie not found"
+        description="We could not find that movie. Head back to discovery to find your next watch."
+      />
+    );
   }
 
   if (request.error || !request.data) {
@@ -70,12 +82,13 @@ function MovieDetailsContent({ id }) {
   const recommendations = (movie.recommendations?.results || [])
     .filter((recommendation) => recommendation.id !== movie.id)
     .slice(0, 6);
-  const trailer = (movie.videos?.results || []).find((video) => (
-    video.official === true
-    && video.site === 'YouTube'
-    && video.type === 'Trailer'
-    && /^[A-Za-z0-9_-]{11}$/.test(video.key)
-  ));
+  const trailer = (movie.videos?.results || []).find(
+    (video) =>
+      video.official === true &&
+      video.site === 'YouTube' &&
+      video.type === 'Trailer' &&
+      /^[A-Za-z0-9_-]{11}$/.test(video.key),
+  );
 
   return (
     <main id="main-content">
@@ -106,7 +119,10 @@ function MovieDetailsContent({ id }) {
                 {movie.title}
               </h1>
               <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-300">
-                <span className="rating" aria-label={rating === 'NR' ? 'Not rated' : `Rated ${rating} out of 10`}>
+                <span
+                  className="rating"
+                  aria-label={rating === 'NR' ? 'Not rated' : `Rated ${rating} out of 10`}
+                >
                   <Star size={15} fill="currentColor" aria-hidden="true" />
                   {rating}
                 </span>
@@ -116,12 +132,17 @@ function MovieDetailsContent({ id }) {
               {movie.genres?.length ? (
                 <ul aria-label="Genres" className="mb-6 flex flex-wrap gap-2">
                   {movie.genres.map((genre) => (
-                    <li key={genre.id} className="rounded-md border border-white/15 bg-white/4 px-3 py-1 text-xs text-slate-300">
+                    <li
+                      key={genre.id}
+                      className="rounded-md border border-white/15 bg-white/4 px-3 py-1 text-xs text-slate-300"
+                    >
                       {genre.name}
                     </li>
                   ))}
                 </ul>
-              ) : <p className="text-xs text-slate-400">Genre information is not available.</p>}
+              ) : (
+                <p className="text-xs text-slate-400">Genre information is not available.</p>
+              )}
 
               <h2 className="mb-3 text-sm font-semibold">The story</h2>
               <p className="mb-6 max-w-3xl text-sm leading-7 text-slate-300">
@@ -171,7 +192,9 @@ function MovieDetailsContent({ id }) {
                     alt={person.name}
                     className="mb-3 aspect-[2/3] w-full rounded-lg object-cover"
                   />
-                  <h3 className="mb-1 truncate text-xs font-medium" title={person.name}>{person.name}</h3>
+                  <h3 className="mb-1 truncate text-xs font-medium" title={person.name}>
+                    {person.name}
+                  </h3>
                   <p className="mb-0 truncate text-xs text-slate-500" title={person.character}>
                     {person.character || 'Cast member'}
                   </p>
@@ -206,7 +229,12 @@ function MovieDetailsContent({ id }) {
               ) : (
                 <>
                   {movie.backdrop_path && (
-                    <MovieImage path={movie.backdrop_path} size="w1280" alt="" className="absolute inset-0 h-full w-full object-cover" />
+                    <MovieImage
+                      path={movie.backdrop_path}
+                      size="w1280"
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
                   )}
                   <button
                     type="button"
@@ -253,12 +281,16 @@ function MovieDetailsContent({ id }) {
 export default function MovieDetails() {
   const { id } = useParams();
   const movieId = Number(id);
-  const valid = /^[1-9]\d*$/.test(id || '')
-    && Number.isSafeInteger(movieId)
-    && movieId <= 2_147_483_647;
+  const valid =
+    /^[1-9]\d*$/.test(id || '') && Number.isSafeInteger(movieId) && movieId <= 2_147_483_647;
 
   if (!valid) {
-    return <NotFound title="Movie not found" description="That movie link is not valid. Head back to discovery to choose a movie." />;
+    return (
+      <NotFound
+        title="Movie not found"
+        description="That movie link is not valid. Head back to discovery to choose a movie."
+      />
+    );
   }
 
   return <MovieDetailsContent key={id} id={movieId} />;

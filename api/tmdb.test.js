@@ -10,7 +10,9 @@ function makeRequest(query = 'endpoint=popular', method = 'GET') {
 
   const res = new EventEmitter();
   res.headers = {};
-  res.setHeader = (name, value) => { res.headers[name] = value; };
+  res.setHeader = (name, value) => {
+    res.headers[name] = value;
+  };
   res.end = vi.fn((body) => {
     res.body = JSON.parse(body);
     res.writableEnded = true;
@@ -21,7 +23,10 @@ function makeRequest(query = 'endpoint=popular', method = 'GET') {
 describe('TMDB proxy', () => {
   beforeEach(() => {
     vi.stubEnv('TMDB_READ_ACCESS_TOKEN', 'test-server-token');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ results: [] }))));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ results: [] }))),
+    );
   });
 
   afterEach(() => {
@@ -178,9 +183,12 @@ describe('TMDB proxy', () => {
 
   it('stops a slow upstream request after ten seconds', async () => {
     vi.useFakeTimers();
-    fetch.mockImplementation((url, { signal }) => new Promise((resolve, reject) => {
-      signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
-    }));
+    fetch.mockImplementation(
+      (url, { signal }) =>
+        new Promise((resolve, reject) => {
+          signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+        }),
+    );
     const { req, res } = makeRequest();
     const pending = handler(req, res);
     await vi.advanceTimersByTimeAsync(10_000);
@@ -190,9 +198,12 @@ describe('TMDB proxy', () => {
   });
 
   it('cancels upstream work when the client disconnects and cleans up listeners', async () => {
-    fetch.mockImplementation((url, { signal }) => new Promise((resolve, reject) => {
-      signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
-    }));
+    fetch.mockImplementation(
+      (url, { signal }) =>
+        new Promise((resolve, reject) => {
+          signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+        }),
+    );
     const { req, res } = makeRequest();
     const pending = handler(req, res);
     res.emit('close');

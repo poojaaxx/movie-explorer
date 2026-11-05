@@ -4,8 +4,17 @@ import { formatRating, formatRuntime, formatYear, imageUrl } from './movies.js';
 describe('movie presentation helpers', () => {
   it('only builds image URLs from safe TMDB file paths and known sizes', () => {
     expect(imageUrl('/poster_123.jpg')).toBe('https://image.tmdb.org/t/p/w500/poster_123.jpg');
-    expect(imageUrl('/backdrop.jpg', 'w1280')).toBe('https://image.tmdb.org/t/p/w1280/backdrop.jpg');
-    for (const path of [null, '', 'https://other.example/photo.jpg', '//other.example/photo.jpg', '/../photo.jpg', '/photo.jpg?token=secret']) {
+    expect(imageUrl('/backdrop.jpg', 'w1280')).toBe(
+      'https://image.tmdb.org/t/p/w1280/backdrop.jpg',
+    );
+    for (const path of [
+      null,
+      '',
+      'https://other.example/photo.jpg',
+      '//other.example/photo.jpg',
+      '/../photo.jpg',
+      '/photo.jpg?token=secret',
+    ]) {
       expect(imageUrl(path)).toBeNull();
     }
     expect(imageUrl('/poster.jpg', '../original')).toBeNull();

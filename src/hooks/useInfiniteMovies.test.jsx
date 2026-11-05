@@ -1,5 +1,13 @@
 import { StrictMode } from 'react';
-import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useInfiniteMovies from './useInfiniteMovies.js';
 import PopularMovies from '../components/PopularMovies.jsx';
@@ -7,7 +15,13 @@ import { requestMovies } from '../services/tmdb.js';
 
 vi.mock('../services/tmdb.js', () => ({ requestMovies: vi.fn() }));
 vi.mock('../components/MovieGrid.jsx', () => ({
-  default: ({ movies }) => <div>{movies.map((movie) => <p key={movie.id}>{movie.title}</p>)}</div>,
+  default: ({ movies }) => (
+    <div>
+      {movies.map((movie) => (
+        <p key={movie.id}>{movie.title}</p>
+      ))}
+    </div>
+  ),
 }));
 
 function deferred() {
@@ -41,7 +55,11 @@ describe('useInfiniteMovies', () => {
     requestMovies.mockReturnValueOnce(first.promise).mockReturnValueOnce(second.promise);
     const { result } = renderHook(() => useInfiniteMovies());
 
-    expect(requestMovies).toHaveBeenCalledWith('popular', { page: 1 }, { signal: expect.any(AbortSignal) });
+    expect(requestMovies).toHaveBeenCalledWith(
+      'popular',
+      { page: 1 },
+      { signal: expect.any(AbortSignal) },
+    );
     act(() => {
       result.current.loadMore();
       result.current.loadMore();
@@ -61,7 +79,9 @@ describe('useInfiniteMovies', () => {
   });
 
   it('removes duplicate IDs within and across pages, then stops at the last page', async () => {
-    requestMovies.mockResolvedValueOnce(moviePage([1, 1, 2])).mockResolvedValueOnce(moviePage([2, 3, 3]));
+    requestMovies
+      .mockResolvedValueOnce(moviePage([1, 1, 2]))
+      .mockResolvedValueOnce(moviePage([2, 3, 3]));
     const { result } = renderHook(() => useInfiniteMovies());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.movies.map((movie) => movie.id)).toEqual([1, 2]);
@@ -69,7 +89,9 @@ describe('useInfiniteMovies', () => {
     await act(async () => result.current.loadMore());
     expect(result.current.movies.map((movie) => movie.id)).toEqual([1, 2, 3]);
     expect(result.current).toMatchObject({ hasMore: false, totalResults: 40, error: null });
-    act(() => { result.current.loadMore(); });
+    act(() => {
+      result.current.loadMore();
+    });
     expect(requestMovies).toHaveBeenCalledTimes(2);
   });
 
@@ -80,7 +102,9 @@ describe('useInfiniteMovies', () => {
     await act(async () => result.current.loadMore());
     expect(result.current.movies.map((movie) => movie.id)).toEqual([1]);
     expect(result.current.hasMore).toBe(false);
-    act(() => { result.current.loadMore(); });
+    act(() => {
+      result.current.loadMore();
+    });
     expect(requestMovies).toHaveBeenCalledTimes(2);
   });
 
@@ -89,7 +113,9 @@ describe('useInfiniteMovies', () => {
     const { result } = renderHook(() => useInfiniteMovies());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current).toMatchObject({ movies: [], error: null, hasMore: false });
-    act(() => { result.current.loadMore(); });
+    act(() => {
+      result.current.loadMore();
+    });
     expect(requestMovies).toHaveBeenCalledTimes(1);
   });
 
@@ -118,7 +144,9 @@ describe('useInfiniteMovies', () => {
   });
 
   it('can retry a failed first page', async () => {
-    requestMovies.mockRejectedValueOnce(new Error('Offline')).mockResolvedValueOnce(moviePage([1], 1));
+    requestMovies
+      .mockRejectedValueOnce(new Error('Offline'))
+      .mockResolvedValueOnce(moviePage([1], 1));
     const { result } = renderHook(() => useInfiniteMovies());
     await waitFor(() => expect(result.current.error?.message).toBe('Offline'));
     await act(async () => result.current.retry());
@@ -135,34 +163,43 @@ describe('useInfiniteMovies', () => {
     expect(signal.aborted).toBe(true);
     await act(async () => pending.resolve(moviePage([1])));
     expect(result.current.movies).toEqual([]);
-    act(() => { result.current.loadMore(); });
+    act(() => {
+      result.current.loadMore();
+    });
     expect(requestMovies).toHaveBeenCalledTimes(1);
   });
 
-  it.each(['resolve', 'reject'])('ignores a stale StrictMode request that later %ss', async (outcome) => {
-    const stale = deferred();
-    const current = deferred();
-    requestMovies.mockReturnValueOnce(stale.promise).mockReturnValueOnce(current.promise);
-    const { result } = renderHook(() => useInfiniteMovies(), { wrapper: StrictMode });
-    expect(requestMovies).toHaveBeenCalledTimes(2);
-    expect(requestMovies.mock.calls[0][2].signal.aborted).toBe(true);
-    expect(requestMovies.mock.calls[1][2].signal.aborted).toBe(false);
+  it.each(['resolve', 'reject'])(
+    'ignores a stale StrictMode request that later %ss',
+    async (outcome) => {
+      const stale = deferred();
+      const current = deferred();
+      requestMovies.mockReturnValueOnce(stale.promise).mockReturnValueOnce(current.promise);
+      const { result } = renderHook(() => useInfiniteMovies(), { wrapper: StrictMode });
+      expect(requestMovies).toHaveBeenCalledTimes(2);
+      expect(requestMovies.mock.calls[0][2].signal.aborted).toBe(true);
+      expect(requestMovies.mock.calls[1][2].signal.aborted).toBe(false);
 
-    await act(async () => {
-      if (outcome === 'resolve') stale.resolve(moviePage([99]));
-      else stale.reject(new Error('An old request failed.'));
-    });
-    expect(result.current).toMatchObject({ movies: [], error: null, loading: true });
-    act(() => { result.current.loadMore(); });
-    expect(requestMovies).toHaveBeenCalledTimes(2);
+      await act(async () => {
+        if (outcome === 'resolve') stale.resolve(moviePage([99]));
+        else stale.reject(new Error('An old request failed.'));
+      });
+      expect(result.current).toMatchObject({ movies: [], error: null, loading: true });
+      act(() => {
+        result.current.loadMore();
+      });
+      expect(requestMovies).toHaveBeenCalledTimes(2);
 
-    await act(async () => current.resolve(moviePage([1], 1)));
-    expect(result.current.movies.map((movie) => movie.id)).toEqual([1]);
-    expect(result.current.loading).toBe(false);
-  });
+      await act(async () => current.resolve(moviePage([1], 1)));
+      expect(result.current.movies.map((movie) => movie.id)).toEqual([1]);
+      expect(result.current.loading).toBe(false);
+    },
+  );
 
   it('never requests a page above the API limit of 500', async () => {
-    requestMovies.mockImplementation((_endpoint, { page }) => Promise.resolve(moviePage([page], 800)));
+    requestMovies.mockImplementation((_endpoint, { page }) =>
+      Promise.resolve(moviePage([page], 800)),
+    );
     const { result } = renderHook(() => useInfiniteMovies());
     await waitFor(() => expect(result.current.loading).toBe(false));
     for (let page = 2; page <= 500; page += 1) {
@@ -170,7 +207,9 @@ describe('useInfiniteMovies', () => {
     }
     expect(result.current.movies).toHaveLength(500);
     expect(result.current.hasMore).toBe(false);
-    act(() => { result.current.loadMore(); });
+    act(() => {
+      result.current.loadMore();
+    });
     expect(requestMovies).toHaveBeenCalledTimes(500);
     expect(requestMovies.mock.calls.at(-1)[1]).toEqual({ page: 500 });
   });

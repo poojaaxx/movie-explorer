@@ -1,7 +1,20 @@
-const imageSizes = new Set(['w45', 'w92', 'w154', 'w185', 'w300', 'w342', 'w500', 'w780', 'w1280', 'h632', 'original']);
+const imageSizes = new Set([
+  'w45',
+  'w92',
+  'w154',
+  'w185',
+  'w300',
+  'w342',
+  'w500',
+  'w780',
+  'w1280',
+  'h632',
+  'original',
+]);
 
 export function imageUrl(path, size = 'w500') {
-  if (typeof path !== 'string' || !/^\/[a-z0-9_-]+\.(jpg|jpeg|png|webp|svg)$/i.test(path)) return null;
+  if (typeof path !== 'string' || !/^\/[a-z0-9_-]+\.(jpg|jpeg|png|webp|svg)$/i.test(path))
+    return null;
   if (!imageSizes.has(size)) return null;
   return `https://image.tmdb.org/t/p/${size}${path}`;
 }

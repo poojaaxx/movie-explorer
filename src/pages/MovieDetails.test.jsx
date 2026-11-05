@@ -8,7 +8,13 @@ import { requestMovies } from '../services/tmdb.js';
 
 vi.mock('../services/tmdb.js', () => ({ requestMovies: vi.fn() }));
 vi.mock('../components/MovieGrid.jsx', () => ({
-  default: ({ movies }) => <div>{movies.map((movie) => <p key={movie.id}>{movie.title}</p>)}</div>,
+  default: ({ movies }) => (
+    <div>
+      {movies.map((movie) => (
+        <p key={movie.id}>{movie.title}</p>
+      ))}
+    </div>
+  ),
 }));
 
 const movie = {
@@ -21,7 +27,9 @@ const movie = {
   poster_path: '/poster.jpg',
   backdrop_path: '/backdrop.jpg',
   genres: [{ id: 18, name: 'Drama' }],
-  credits: { cast: [{ id: 1, name: 'Amy Adams', character: 'Louise Banks', profile_path: '/amy.jpg' }] },
+  credits: {
+    cast: [{ id: 1, name: 'Amy Adams', character: 'Louise Banks', profile_path: '/amy.jpg' }],
+  },
   videos: { results: [{ official: true, site: 'YouTube', type: 'Trailer', key: 'Abc123_-xyz' }] },
   recommendations: { results: [{ id: 12, title: 'Contact' }] },
 };
@@ -62,14 +70,19 @@ describe('movie details', () => {
     expect(screen.getByText('Contact')).toBeInTheDocument();
   });
 
-  it.each(['-1', '0', 'abc', '2147483648', '11.5'])('rejects invalid movie ID %s before fetching', (id) => {
-    renderDetails([`/movie/${id}`]);
-    expect(screen.getByRole('heading', { name: 'Movie not found' })).toBeInTheDocument();
-    expect(requestMovies).not.toHaveBeenCalled();
-  });
+  it.each(['-1', '0', 'abc', '2147483648', '11.5'])(
+    'rejects invalid movie ID %s before fetching',
+    (id) => {
+      renderDetails([`/movie/${id}`]);
+      expect(screen.getByRole('heading', { name: 'Movie not found' })).toBeInTheDocument();
+      expect(requestMovies).not.toHaveBeenCalled();
+    },
+  );
 
   it('handles unavailable movies with a useful route back to discovery', async () => {
-    requestMovies.mockRejectedValue(Object.assign(new Error('Missing movie'), { code: 'MOVIE_NOT_FOUND' }));
+    requestMovies.mockRejectedValue(
+      Object.assign(new Error('Missing movie'), { code: 'MOVIE_NOT_FOUND' }),
+    );
     renderDetails();
     expect(await screen.findByRole('heading', { name: 'Movie not found' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to discovery' })).toHaveAttribute('href', '/');
@@ -78,7 +91,9 @@ describe('movie details', () => {
   it('shows an API failure and lets the visitor retry', async () => {
     requestMovies.mockRejectedValueOnce(new Error('The movie service is temporarily unavailable.'));
     renderDetails();
-    expect(await screen.findByRole('alert')).toHaveTextContent('The movie service is temporarily unavailable.');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'The movie service is temporarily unavailable.',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(await screen.findByRole('heading', { name: 'Arrival', level: 1 })).toBeInTheDocument();
     expect(requestMovies).toHaveBeenCalledTimes(2);
@@ -90,7 +105,10 @@ describe('movie details', () => {
     expect(screen.queryByTitle('Arrival official trailer')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Watch trailer' })).toHaveAttribute('href', '#trailer');
     fireEvent.click(play);
-    expect(screen.getByTitle('Arrival official trailer')).toHaveAttribute('src', 'https://www.youtube-nocookie.com/embed/Abc123_-xyz?autoplay=1&rel=0');
+    expect(screen.getByTitle('Arrival official trailer')).toHaveAttribute(
+      'src',
+      'https://www.youtube-nocookie.com/embed/Abc123_-xyz?autoplay=1&rel=0',
+    );
   });
 
   it.each([
@@ -101,25 +119,46 @@ describe('movie details', () => {
   ])('does not embed an unofficial or unsafe video: %j', async (video) => {
     requestMovies.mockResolvedValue({ ...movie, videos: { results: [video] } });
     renderDetails();
-    expect(await screen.findByText('An official trailer is not available for this movie.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('An official trailer is not available for this movie.'),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Watch trailer' })).not.toBeInTheDocument();
   });
 
   it('handles missing optional movie information gracefully', async () => {
     requestMovies.mockResolvedValue({ id: 11, title: 'Arrival' });
     renderDetails();
-    expect(await screen.findByText('Cast details are not available for this movie.')).toBeInTheDocument();
-    expect(screen.getByText('An official trailer is not available for this movie.')).toBeInTheDocument();
-    expect(screen.getByText('There are no recommendations for this movie yet.')).toBeInTheDocument();
-    expect(screen.getByText('An overview is not available for this movie yet.')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Cast details are not available for this movie.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('An official trailer is not available for this movie.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('There are no recommendations for this movie yet.'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('An overview is not available for this movie yet.'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Genre information is not available.')).toBeInTheDocument();
   });
 
   it('limits cast and recommendations to a manageable number', async () => {
     requestMovies.mockResolvedValue({
       ...movie,
-      credits: { cast: Array.from({ length: 20 }, (_, id) => ({ id, name: `Actor ${id}`, character: 'Role' })) },
-      recommendations: { results: Array.from({ length: 10 }, (_, index) => ({ id: index + 100, title: `Recommendation ${index}` })) },
+      credits: {
+        cast: Array.from({ length: 20 }, (_, id) => ({
+          id,
+          name: `Actor ${id}`,
+          character: 'Role',
+        })),
+      },
+      recommendations: {
+        results: Array.from({ length: 10 }, (_, index) => ({
+          id: index + 100,
+          title: `Recommendation ${index}`,
+        })),
+      },
     });
     renderDetails();
     expect(await screen.findByText('Actor 11')).toBeInTheDocument();
@@ -129,7 +168,9 @@ describe('movie details', () => {
   });
 
   it('resets playback when navigating to another movie', async () => {
-    requestMovies.mockResolvedValueOnce(movie).mockResolvedValueOnce({ ...movie, id: 12, title: 'Contact' });
+    requestMovies
+      .mockResolvedValueOnce(movie)
+      .mockResolvedValueOnce({ ...movie, id: 12, title: 'Contact' });
     renderDetails();
     fireEvent.click(await screen.findByRole('button', { name: 'Play Arrival trailer' }));
     expect(screen.getByTitle('Arrival official trailer')).toBeInTheDocument();
@@ -155,7 +196,9 @@ describe('movie details', () => {
 
   it('provides the custom page-not-found screen for unmatched routes', async () => {
     renderDetails(['/missing-page']);
-    await waitFor(() => expect(screen.getByRole('heading', { name: 'This scene is missing.' })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'This scene is missing.' })).toBeInTheDocument(),
+    );
     expect(screen.getByRole('link', { name: 'Back to discovery' })).toHaveAttribute('href', '/');
   });
 });

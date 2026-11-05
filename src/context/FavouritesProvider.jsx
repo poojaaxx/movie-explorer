@@ -4,10 +4,12 @@ import { imageUrl } from '../utils/movies.js';
 
 const STORAGE_KEY = 'movie-explorer:favourites:v1';
 const READ_ERROR = 'Saved favourites could not be read. You can start a new list for this visit.';
-const SAVE_ERROR = 'Your favourites are available for this visit, but could not be saved in this browser.';
+const SAVE_ERROR =
+  'Your favourites are available for this visit, but could not be saved in this browser.';
 
 function savedMovie(movie) {
-  if (!movie || !Number.isInteger(movie.id) || movie.id <= 0 || movie.id > 2_147_483_647) return null;
+  if (!movie || !Number.isInteger(movie.id) || movie.id <= 0 || movie.id > 2_147_483_647)
+    return null;
   if (typeof movie.title !== 'string' || !movie.title.trim()) return null;
 
   // Cards only need this small snapshot, even when saving from a full details response.
@@ -15,12 +17,14 @@ function savedMovie(movie) {
     id: movie.id,
     title: movie.title.trim(),
     poster_path: imageUrl(movie.poster_path) ? movie.poster_path : null,
-    release_date: typeof movie.release_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(movie.release_date)
-      ? movie.release_date
-      : '',
-    vote_average: Number.isFinite(movie.vote_average) && movie.vote_average >= 0 && movie.vote_average <= 10
-      ? movie.vote_average
-      : 0,
+    release_date:
+      typeof movie.release_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(movie.release_date)
+        ? movie.release_date
+        : '',
+    vote_average:
+      Number.isFinite(movie.vote_average) && movie.vote_average >= 0 && movie.vote_average <= 10
+        ? movie.vote_average
+        : 0,
   };
 }
 
@@ -103,12 +107,14 @@ export default function FavouritesProvider({ children }) {
   }
 
   return (
-    <FavouritesContext.Provider value={{
-      favourites: state.favourites,
-      storageError: state.storageError,
-      isFavourite,
-      toggleFavourite,
-    }}>
+    <FavouritesContext.Provider
+      value={{
+        favourites: state.favourites,
+        storageError: state.storageError,
+        isFavourite,
+        toggleFavourite,
+      }}
+    >
       {children}
     </FavouritesContext.Provider>
   );

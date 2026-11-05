@@ -9,11 +9,14 @@ export default function useRequest(endpoint, params = {}) {
   );
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState({ request: null, data: null, error: null });
-  const request = useMemo(() => ({
-    endpoint,
-    params: Object.fromEntries(JSON.parse(paramsKey)),
-    attempt,
-  }), [endpoint, paramsKey, attempt]);
+  const request = useMemo(
+    () => ({
+      endpoint,
+      params: Object.fromEntries(JSON.parse(paramsKey)),
+      attempt,
+    }),
+    [endpoint, paramsKey, attempt],
+  );
 
   useEffect(() => {
     if (request.endpoint === null || request.endpoint === undefined) return;

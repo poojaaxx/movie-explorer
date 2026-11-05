@@ -11,12 +11,12 @@ export default function NotFound({
       <EmptyState
         title={title}
         icon={Film}
-        action={(
+        action={
           <Link to="/" className="button button-primary">
             <ArrowLeft size={16} aria-hidden="true" />
             Back to discovery
           </Link>
-        )}
+        }
       >
         {description}
       </EmptyState>

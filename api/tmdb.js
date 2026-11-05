@@ -28,7 +28,8 @@ function parsePositiveInteger(value, maximum) {
 
 function buildUpstreamUrl(parameters) {
   const endpoint = parameters.get('endpoint');
-  if (!Object.hasOwn(allowedParameters, endpoint)) throw new Error('Choose a valid movie endpoint.');
+  if (!Object.hasOwn(allowedParameters, endpoint))
+    throw new Error('Choose a valid movie endpoint.');
   const allowed = allowedParameters[endpoint];
 
   const seen = new Set();
@@ -136,15 +137,30 @@ export default async function handler(req, res) {
     }
     if (response.status === 429) {
       res.setHeader('Retry-After', '30');
-      return sendError(res, 429, 'RATE_LIMITED', 'Too many movie requests. Please try again shortly.');
+      return sendError(
+        res,
+        429,
+        'RATE_LIMITED',
+        'Too many movie requests. Please try again shortly.',
+      );
     }
     if (!response.ok) {
-      return sendError(res, 502, 'UPSTREAM_ERROR', 'Movie data is temporarily unavailable. Please try again.');
+      return sendError(
+        res,
+        502,
+        'UPSTREAM_ERROR',
+        'Movie data is temporarily unavailable. Please try again.',
+      );
     }
 
     const data = await response.json();
     if (!data || typeof data !== 'object' || data.success === false) {
-      return sendError(res, 502, 'UPSTREAM_ERROR', 'Movie data is temporarily unavailable. Please try again.');
+      return sendError(
+        res,
+        502,
+        'UPSTREAM_ERROR',
+        'Movie data is temporarily unavailable. Please try again.',
+      );
     }
     if (clientDisconnected) return;
 
@@ -156,7 +172,12 @@ export default async function handler(req, res) {
   } catch {
     if (clientDisconnected) return;
     if (timedOut) {
-      return sendError(res, 504, 'UPSTREAM_TIMEOUT', 'The movie service took too long to respond. Please try again.');
+      return sendError(
+        res,
+        504,
+        'UPSTREAM_TIMEOUT',
+        'The movie service took too long to respond. Please try again.',
+      );
     }
     sendError(res, 502, 'NETWORK_ERROR', 'Unable to reach the movie service. Please try again.');
   } finally {
